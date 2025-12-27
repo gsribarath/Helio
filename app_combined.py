@@ -10,7 +10,7 @@ import uuid
 import sqlite3
 
 # Initialize Flask app
-app = Flask(__name__, static_folder='../frontend/build', static_url_path='')
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
 # Configuration for single-server deployment
 app.config['SECRET_KEY'] = 'helio-production-secret-2025'
