@@ -46,7 +46,7 @@ const Settings = () => {
   const languages = [
     { code: 'en', name: 'English', nativeName: 'English' },
     { code: 'hi', name: 'Hindi', nativeName: 'हिंदी' },
-    { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ' }
+    { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' }
   ];
 
   const handleLanguageChange = (languageCode) => {

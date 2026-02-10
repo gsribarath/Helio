@@ -69,7 +69,7 @@ const Login = ({ onLogin }) => {
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-    { code: 'pa', name: 'ਪੰਜਾਬੀ', flag: '🇮🇳' }
+    { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' }
   ];
 
   const handleRoleSelect = (role) => {
