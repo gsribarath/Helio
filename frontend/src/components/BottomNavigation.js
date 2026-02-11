@@ -70,12 +70,12 @@ const BottomNavigation = () => {
       <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg,#2563eb,#7c3aed,#10b981)' }} />
 
       <div
-        className="px-2 pb-[env(safe-area-inset-bottom,0px)]"
+        className="px-1 sm:px-2 pb-[env(safe-area-inset-bottom,0px)]"
         style={{ height: 72 }}
       >
         <div
           className="grid h-full"
-          style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12, alignItems: 'center' }}
+          style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 'clamp(8px, 2vw, 12px)', alignItems: 'center' }}
         >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -88,11 +88,12 @@ const BottomNavigation = () => {
               className="group relative flex flex-col items-center justify-center no-underline"
               style={{
                 textDecoration: 'none',
-                height: 56,
-                margin: '0 4px',
+                height: 'clamp(52px, 12vw, 56px)',
+                margin: '0 2px',
                 borderRadius: 12,
                 background: 'transparent',
-                transition: 'background-color 160ms ease'
+                transition: 'background-color 160ms ease',
+                minHeight: '44px'
               }}
               aria-label={`Navigate to ${item.label}`}
               aria-current={isActive ? 'page' : undefined}
@@ -100,8 +101,8 @@ const BottomNavigation = () => {
               <div
                 className="flex items-center justify-center"
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 'clamp(32px, 8vw, 36px)',
+                  height: 'clamp(32px, 8vw, 36px)',
                   borderRadius: 12,
                   backgroundColor: isActive ? '#2563eb' : 'transparent',
                   boxShadow: isActive ? '0 6px 14px rgba(37,99,235,0.25)' : 'inset 0 0 0 1px rgba(124,58,237,0.15)',
@@ -111,7 +112,7 @@ const BottomNavigation = () => {
                 <Icon 
                   className="transition-colors"
                   style={{
-                    fontSize: 20,
+                    fontSize: 'clamp(18px, 4vw, 20px)',
                     color: isActive ? '#ffffff' : '#7c3aed'
                   }}
                 />
@@ -119,7 +120,7 @@ const BottomNavigation = () => {
               <span
                 className="mt-1"
                 style={{ 
-                  fontSize: 12,
+                  fontSize: 'clamp(10px, 2.5vw, 12px)',
                   lineHeight: '14px',
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? '#2563eb' : '#7c3aed'
