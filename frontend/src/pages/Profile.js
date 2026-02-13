@@ -105,61 +105,61 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-bg-secondary">
       {/* Header - Matching Home Page Style */}
-      <div className="bg-gradient-to-r from-primary-color to-primary-dark text-white py-12">
-        <div className="container-left-flush text-left" style={{paddingLeft: 0}}>
-          <h1 className="text-4xl font-black mb-4 tracking-tight">
+      <div className="bg-gradient-to-r from-primary-color to-primary-dark text-white py-6 md:py-12">
+        <div className="px-4 md:px-6 lg:px-8 text-left max-w-7xl mx-auto">
+          <h1 className="text-xl md:text-4xl font-black mb-2 md:mb-4 tracking-tight leading-tight">
             {t('patient')} <span className="text-primary-light">{t('profile')}</span>
           </h1>
-          <p className="text-xl text-primary-light font-medium">
+          <p className="text-sm md:text-xl text-primary-light font-medium break-words leading-relaxed">
             <TransText text={profileData.name} /> • {t('age')} {profileData.age} {t('years_suffix')} • <TransText text={profileData.gender} />
           </p>
-          <p className="text-primary-light mt-2">
+          <p className="text-primary-light mt-2 text-xs md:text-base leading-relaxed">
             {t('manage_personal_medical_info')}
           </p>
         </div>
       </div>
 
-      <div className="container-left-flush py-8 pb-40" style={{paddingLeft: 0, paddingRight: 0}}>
-  <div className="w-full" style={{gap: '0.1cm', marginLeft: 0}}>
+      <div className="px-3 md:px-6 lg:px-8 py-4 md:py-8 pb-24 md:pb-40 max-w-7xl mx-auto">
+        <div className="w-full space-y-4 md:space-y-6">
           
           {/* Personal Information Card - Clean Layout */}
-          <div className="card-elevated" style={{marginBottom: '0.1cm'}}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-text-primary">
+          <div className="card-elevated p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
+              <h3 className="text-base md:text-xl font-bold text-text-primary">
                 {t('personal_information')}
               </h3>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className={`btn ${
+                className={`btn text-xs md:text-base px-3 py-2 md:px-4 md:py-2 ${
                   isEditing 
                     ? 'btn-secondary' 
                     : 'btn-primary'
-                }`}
+                } w-full sm:w-auto`}
               >
-                {isEditing ? <FaTimes /> : <FaEdit />}
+                {isEditing ? <FaTimes className="mr-1 md:mr-2 text-xs md:text-sm" /> : <FaEdit className="mr-1 md:mr-2 text-xs md:text-sm" />}
                 {isEditing ? t('cancel') : t('edit')}
               </button>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-6" style={{gap: '0.2cm'}}>
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
               
-              {/* Fixed Dummy Photo - Left Side */}
-              <div className="flex-shrink-0">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center border border-border-light overflow-hidden">
+              {/* Fixed Dummy Photo - Top/Left Side */}
+              <div className="flex-shrink-0 mx-auto md:mx-0">
+                <div className="w-24 h-24 md:w-28 md:h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center border-2 border-border-light overflow-hidden shadow-sm">
                   <img 
                     src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjQ4IiBjeT0iMzIiIHI9IjE2IiBmaWxsPSIjOUI5QjlCIi8+CjxwYXRoIGQ9Ik0xNiA4MEMxNiA2OC45NTQzIDI0Ljk1NDMgNjAgMzYgNjBINjBDNzEuMDQ1NyA2MCA4MCA2OC45NTQzIDgwIDgwVjk2SDE2VjgwWiIgZmlsbD0iIzlCOUI5QiIvPgo8L3N2Zz4K"
                     alt="Patient Photo" 
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-xl"
                   />
                 </div>
               </div>
 
               {/* Personal Details - Right Side */}
-              <div className="flex-grow">
-                <div className="space-y-4" style={{gap: '0.1cm'}}>
+              <div className="flex-grow w-full min-w-0">
+                <div className="space-y-3 md:space-y-4">
                   
-                  <div style={{marginBottom: '0.1cm'}}>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                       {t('full_name')}
                     </label>
                     {isEditing ? (
@@ -168,15 +168,15 @@ const Profile = () => {
                         name="name"
                         value={profileData.name}
                         onChange={handleInputChange}
-                        className="input"
+                        className="input w-full text-sm md:text-base"
                       />
                     ) : (
-                      <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light"><TransText text={profileData.name} /></p>
+                      <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-sm md:text-base break-words overflow-wrap-anywhere"><TransText text={profileData.name} /></p>
                     )}
                   </div>
 
-                  <div style={{marginBottom: '0.1cm'}}>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                       {t('age')}
                     </label>
                     {isEditing ? (
@@ -185,15 +185,15 @@ const Profile = () => {
                         name="age"
                         value={profileData.age}
                         onChange={handleInputChange}
-                        className="input"
+                        className="input w-full text-sm md:text-base"
                       />
                     ) : (
-                      <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light">{profileData.age} {t('years_suffix')}</p>
+                      <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-sm md:text-base">{profileData.age} {t('years_suffix')}</p>
                     )}
                   </div>
 
-                  <div style={{marginBottom: '0.1cm'}}>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                       {t('gender')}
                     </label>
                     {isEditing ? (
@@ -201,19 +201,19 @@ const Profile = () => {
                         name="gender"
                         value={profileData.gender}
                         onChange={handleInputChange}
-                        className="input"
+                        className="input w-full text-sm md:text-base"
                       >
                         <option value="Male">{t('male')}</option>
                         <option value="Female">{t('female')}</option>
                         <option value="Other">{t('other')}</option>
                       </select>
                     ) : (
-                      <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light"><TransText text={profileData.gender} /></p>
+                      <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-sm md:text-base break-words overflow-wrap-anywhere"><TransText text={profileData.gender} /></p>
                     )}
                   </div>
 
-                  <div style={{marginBottom: '0.1cm'}}>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                       {t('phone_number')}
                     </label>
                     {isEditing ? (
@@ -222,15 +222,15 @@ const Profile = () => {
                         name="phone"
                         value={profileData.phone}
                         onChange={handleInputChange}
-                        className="input"
+                        className="input w-full text-sm md:text-base"
                       />
                     ) : (
-                      <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light">{profileData.phone}</p>
+                      <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-sm md:text-base break-words overflow-wrap-anywhere">{profileData.phone}</p>
                     )}
                   </div>
 
-                  <div style={{marginBottom: '0.1cm'}}>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                       {t('address')}
                     </label>
                     {isEditing ? (
@@ -239,21 +239,21 @@ const Profile = () => {
                         value={profileData.address}
                         onChange={handleInputChange}
                         rows="3"
-                        className="input resize-none"
+                        className="input resize-none w-full text-sm md:text-base"
                       />
                     ) : (
-                      <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light"><TransText text={profileData.address} /></p>
+                      <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-sm md:text-base break-words overflow-wrap-anywhere leading-relaxed"><TransText text={profileData.address} /></p>
                     )}
                   </div>
                 </div>
 
                 {isEditing && (
-                  <div className="mt-6 text-right">
+                  <div className="mt-4 md:mt-6 text-center md:text-right">
                     <button
                       onClick={handleSave}
-                      className="btn btn-success"
+                      className="btn btn-success w-full md:w-auto text-xs md:text-base px-3 py-2 md:px-4 md:py-2"
                     >
-                      <FaSave className="mr-2" />
+                      <FaSave className="mr-1 md:mr-2 text-xs md:text-sm" />
                       {t('save_changes')}
                     </button>
                   </div>
@@ -263,51 +263,51 @@ const Profile = () => {
           </div>
 
           {/* Medical Information Card - Text Only Layout */}
-          <div className="card-elevated" style={{marginBottom: '0.1cm'}}>
-            <h3 className="text-xl font-bold text-text-primary mb-6">
+          <div className="card-elevated p-4 md:p-6">
+            <h3 className="text-base md:text-xl font-bold text-text-primary mb-4 md:mb-6">
               {t('medical_information')}
             </h3>
 
-            <div className="space-y-4" style={{gap: '0.1cm'}}>
+            <div className="space-y-3 md:space-y-4">
               
               {/* Blood Group */}
-              <div style={{marginBottom: '0.1cm'}}>
-                <label className="block text-sm font-semibold text-text-primary mb-2">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                   {t('blood_group')}
                 </label>
-                <p className="text-text-primary bg-red-50 px-4 py-3 rounded-lg border border-red-200 font-bold text-lg">{profileData.blood_group}</p>
+                <p className="text-text-primary bg-red-50 px-3 py-2 md:px-4 md:py-3 rounded-lg border border-red-200 font-bold text-base md:text-lg">{profileData.blood_group}</p>
               </div>
 
               {/* Height */}
-              <div style={{marginBottom: '0.1cm'}}>
-                <label className="block text-sm font-semibold text-text-primary mb-2">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                   {t('height')}
                 </label>
-                <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light font-semibold">{profileData.height}</p>
+                <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light font-semibold text-sm md:text-base">{profileData.height}</p>
               </div>
 
               {/* Weight */}
-              <div style={{marginBottom: '0.1cm'}}>
-                <label className="block text-sm font-semibold text-text-primary mb-2">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                   {t('weight')}
                 </label>
-                <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light font-semibold">{profileData.weight}</p>
+                <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light font-semibold text-sm md:text-base">{profileData.weight}</p>
               </div>
 
               {/* Insurance */}
-              <div style={{marginBottom: '0.1cm'}}>
-                <label className="block text-sm font-semibold text-text-primary mb-2">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                   {t('insurance')}
                 </label>
-                <p className="text-text-primary bg-bg-secondary px-4 py-3 rounded-lg border border-border-light text-sm font-semibold break-words">{profileData.insurance_number}</p>
+                <p className="text-text-primary bg-bg-secondary px-3 py-2 md:px-4 md:py-3 rounded-lg border border-border-light text-xs md:text-sm font-semibold break-words overflow-wrap-anywhere">{profileData.insurance_number}</p>
               </div>
 
               {/* Emergency Contact */}
-              <div style={{marginBottom: '0.1cm'}}>
-                <label className="block text-sm font-semibold text-text-primary mb-2">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-text-primary mb-1">
                   {t('emergency_contact')}
                 </label>
-                <p className="text-text-primary bg-orange-50 px-4 py-3 rounded-lg border border-orange-200 break-words">
+                <p className="text-text-primary bg-orange-50 px-3 py-2 md:px-4 md:py-3 rounded-lg border border-orange-200 break-words text-sm md:text-base overflow-wrap-anywhere leading-relaxed">
                   <TransText text={profileData.emergency_contact_name} /> - {profileData.emergency_contact}
                 </p>
               </div>
@@ -315,34 +315,34 @@ const Profile = () => {
           </div>
 
           {/* Current Medical Conditions - Text Only */}
-          <div className="card-elevated">
-            <h3 className="text-xl font-bold text-text-primary mb-6">
+          <div className="card-elevated p-4 md:p-6">
+            <h3 className="text-base md:text-xl font-bold text-text-primary mb-4 md:mb-6">
               {t('current_medical_conditions')}
             </h3>
 
-            <div className="space-y-4" style={{gap: '0.1cm'}}>
+            <div className="space-y-3 md:space-y-4">
               {medicalConditions.map((condition, index) => (
-                <div key={index} className="border border-border-light rounded-lg p-4 hover:shadow-md transition-all duration-300" style={{marginBottom: '0.1cm'}}>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-text-secondary">{t('condition')}</p>
-                      <p className="text-text-primary font-medium"><TransText text={condition.condition} /></p>
+                <div key={index} className="border border-border-light rounded-lg p-3 md:p-4 hover:shadow-md transition-all duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text-secondary mb-1">{t('condition')}</p>
+                      <p className="text-text-primary font-medium text-sm md:text-base break-words overflow-wrap-anywhere"><TransText text={condition.condition} /></p>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-text-secondary">{t('diagnosed')}</p>
-                      <p className="text-text-primary">{condition.diagnosed}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text-secondary mb-1">{t('diagnosed')}</p>
+                      <p className="text-text-primary text-sm md:text-base">{condition.diagnosed}</p>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-text-secondary">{t('status')}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text-secondary mb-1">{t('status')}</p>
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
                         condition.status === 'Controlled' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         <TransText text={condition.status} />
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-text-secondary">{t('current_medication')}</p>
-                      <p className="text-text-primary text-sm"><TransText text={condition.medication} /></p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-text-secondary mb-1">{t('current_medication')}</p>
+                      <p className="text-text-primary text-xs md:text-sm break-words overflow-wrap-anywhere leading-relaxed"><TransText text={condition.medication} /></p>
                     </div>
                   </div>
                 </div>
