@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Medical cross with modern design -->
+  <circle cx="50" cy="50" r="48" fill="url(#grad)"/>
+  <!-- Horizontal bar -->
+  <rect x="25" y="42" width="50" height="16" rx="4" fill="white"/>
+  <!-- Vertical bar -->
+  <rect x="42" y="25" width="16" height="50" rx="4" fill="white"/>
+  <!-- Small heart accent -->
+  <path d="M50 30 Q45 24 40 24 Q35 24 35 29 Q35 34 40 39 L50 48 L60 39 Q65 34 65 29 Q65 24 60 24 Q55 24 50 30 Z" fill="white" opacity="0.3" transform="translate(0, 22) scale(0.5)"/>
+</svg>

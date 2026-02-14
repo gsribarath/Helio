@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { doctorAPI } from '../services/api';
 import { 
   FaSearch, 
@@ -21,16 +22,31 @@ import {
   FaVolumeUp,
   FaVolumeMute,
   FaSyncAlt,
-  FaComments
+  FaComments,
+  FaBell,
+  FaUser,
+  FaRobot,
+  FaHeart,
+  FaFileUpload,
+  FaAmbulance,
+  FaTint,
+  FaBed,
+  FaWalking,
+  FaPills,
+  FaChartLine,
+  FaArrowRight,
+  FaCheckCircle
 } from 'react-icons/fa';
 
 import './HomeDoctors.css';
+import './AIHealthDashboard.css';
 import TransText from '../components/TransText';
 
 
 const Home = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,12 +55,26 @@ const Home = () => {
   const [availableOnly, setAvailableOnly] = useState(false);
   const [showConsultModal, setShowConsultModal] = useState(false);
   const [selectedDoctorForCall, setSelectedDoctorForCall] = useState(null);
+  
+  // AI Health Score state
+  const [healthScore, setHealthScore] = useState(78);
+  const [riskLevel, setRiskLevel] = useState('moderate');
+  
   // Track which doctors have accepted (status in_progress) appointments for this patient
-  const PATIENT_NAME = 'Gurpreet Singh'; // demo assumption
+  const PATIENT_NAME = user?.name || 'Gurpreet Singh'; // Use actual user name or demo assumption
   const [acceptedDoctorIds, setAcceptedDoctorIds] = useState(new Set());
   // Upcoming appointments count for My Appointments button
   const [upcomingCount, setUpcomingCount] = useState(0);
   const [badgeAnimate, setBadgeAnimate] = useState(false); // triggers pop animation when count changes
+  const [upcomingAppointment, setUpcomingAppointment] = useState(null);
+
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
 
   // Helper to parse date/time (shared logic with appointments pages)
   const toDate = (dateStr, timeStr) => {
@@ -64,19 +94,35 @@ const Home = () => {
     try {
       const raw = localStorage.getItem('helio_appointments');
       const arr = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(arr)) { setUpcomingCount(0); return; }
+      if (!Array.isArray(arr)) { 
+        setUpcomingCount(0);
+        setUpcomingAppointment(null);
+        return;
+      }
       const now = new Date();
       let count = 0;
+      let nextAppt = null;
+      let closestDiff = Infinity;
+      
       for (const a of arr) {
         if (!a || !a.id || !a.date || !a.time) continue;
         if (a.status === 'cancelled' || a.status === 'completed') continue;
         const d = toDate(a.date, a.time);
-        if (d && d.getTime() >= now.getTime()) count++;
+        if (d && d.getTime() >= now.getTime()) {
+          count++;
+          const diff = d.getTime() - now.getTime();
+          if (diff < closestDiff) {
+            closestDiff = diff;
+            nextAppt = a;
+          }
+        }
       }
       setUpcomingCount(count);
+      setUpcomingAppointment(nextAppt);
     } catch (e) {
       console.error('Failed to compute upcoming appointments:', e);
       setUpcomingCount(0);
+      setUpcomingAppointment(null);
     }
   }, []);
 
@@ -297,100 +343,287 @@ const Home = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-64">
-          <div className="loading"></div>
-          <span className="ml-2">{t('loading_doctors')}</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-bg-secondary">
-      {/* Professional Header with Helio Branding */}
-      <div className="bg-gradient-to-r from-primary-color to-primary-dark text-white py-12">
-        <div className="container mx-auto px-6 text-center">
-          <div className="px-6 text-center">
-          <h1 className="text-4xl font-black mb-4 tracking-tight">
-            {t('welcome_message')}
-          </h1>
-          <p className="text-xl text-primary-light font-medium">
-            {t('app_description')}
-          </p>
-          <p className="text-primary-light mt-2">
-            {t('find_your_doctor')}
-          </p>
+      {/* Top Greeting Section */}
+      <div className="ai-greeting-section">
+        <div className="greeting-header">
+          <div className="greeting-top">
+            <div className="greeting-text">
+              <h1>
+                {getGreeting()}, {user?.name || PATIENT_NAME} 👋
+              </h1>
+              <p>Your AI Health Companion</p>
+            </div>
+            <div className="greeting-icons">
+              <button className="icon-btn" onClick={() => navigate('/notifications')}>
+                <FaBell />
+                <span className="notif-dot"></span>
+              </button>
+              <div className="profile-avatar" onClick={() => navigate('/profile')}>
+                <FaUser style={{ width: '100%', height: '100%', padding: '8px' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Health Score Card */}
+      <div className="ai-health-score-card fade-in-up">
+        <div className="health-score-header">
+          <div className="health-score-title">
+            <FaRobot style={{ color: '#667eea' }} />
+            AI Health Score
+          </div>
+          <span className="ai-badge">AI Powered</span>
+        </div>
+        
+        <div className="health-score-content">
+          <div className="score-circle-container">
+            <svg className="score-circle" viewBox="0 0 120 120">
+              <circle className="score-circle-bg" cx="60" cy="60" r="54" />
+              <circle 
+                className={`score-circle-progress ${
+                  healthScore >= 80 ? 'excellent' : 
+                  healthScore >= 60 ? 'good' : 
+                  healthScore >= 40 ? 'moderate' : 'poor'
+                }`}
+                cx="60" 
+                cy="60" 
+                r="54"
+                strokeDasharray={`${(healthScore / 100) * 339.292} 339.292`}
+              />
+            </svg>
+            <div className="score-value">
+              <div className="score-number">{healthScore}</div>
+              <div className="score-max">/100</div>
+            </div>
+          </div>
+          
+          <div className="score-details">
+            <span className={`risk-badge ${riskLevel}`}>
+              {riskLevel === 'low' ? '🟢 Low Risk' : 
+               riskLevel === 'moderate' ? '🟡 Moderate Risk' : 
+               '🔴 High Risk'}
+            </span>
+            <div className="ai-insight">
+              💡 Your cardiovascular risk is moderate. We recommend 30 minutes of walking daily to improve your heart health.
+            </div>
+            <button className="view-report-btn" onClick={() => navigate('/reports')}>
+              <FaChartLine />
+              View Detailed Report
+              <FaArrowRight />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions Section */}
+      <div className="quick-actions-section">
+        <h2 className="section-title">Quick Actions</h2>
+        <div className="quick-actions-grid">
+          <button className="quick-action-btn" onClick={() => navigate('/appointments')}>
+            <div className="quick-action-icon primary">
+              <FaCalendar />
+            </div>
+            <span className="quick-action-label">Book Appointment</span>
+          </button>
+          
+          <button className="quick-action-btn" onClick={() => navigate('/reports')}>
+            <div className="quick-action-icon success">
+              <FaFileUpload />
+            </div>
+            <span className="quick-action-label">Upload Report</span>
+          </button>
+          
+          <button className="quick-action-btn" onClick={() => {
+            // Create a dummy AI assistant doctor
+            const aiDoctor = {
+              id: 'ai-assistant',
+              name: 'AI Health Assistant',
+              specialty: 'General Consultation',
+              qualifications: 'AI-Powered',
+              languages: 'All Languages',
+              experience_years: 0
+            };
+            navigate('/video-call', { state: { doctor: aiDoctor } });
+          }}>
+            <div className="quick-action-icon warning">
+              <FaRobot />
+            </div>
+            <span className="quick-action-label">Talk to AI</span>
+          </button>
+          
+          <button className="quick-action-btn" onClick={() => navigate('/emergency-request')}>
+            <div className="quick-action-icon danger">
+              <FaAmbulance />
+            </div>
+            <span className="quick-action-label">Emergency Help</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Upcoming Appointments Card */}
+      <div className="upcoming-appointments-card">
+        <div className="card-header">
+          <h3 className="card-title">Upcoming Appointment</h3>
+          <a className="view-all-link" onClick={() => navigate('/my-appointments')}>
+            View All ({upcomingCount})
+          </a>
+        </div>
+        
+        {upcomingAppointment ? (
+          <div className="appointment-item">
+            <div className="appointment-avatar">
+              <FaUserMd />
+            </div>
+            <div className="appointment-info">
+              <h4>{upcomingAppointment.doctor || 'Doctor'}</h4>
+              <p>{upcomingAppointment.date} at {upcomingAppointment.time}</p>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+                {upcomingAppointment.specialist || 'General Consultation'}
+              </p>
+            </div>
+            {upcomingAppointment.callType && (
+              <button 
+                className="join-btn"
+                onClick={() => {
+                  const doctorObj = {
+                    id: upcomingAppointment.doctorId || '1',
+                    name: upcomingAppointment.doctor || 'Doctor',
+                    specialty: upcomingAppointment.specialist || 'General Medicine'
+                  };
+                  if (upcomingAppointment.callType === 'video') {
+                    navigate('/video-call', { state: { doctor: doctorObj } });
+                  } else {
+                    navigate('/audio-call', { state: { doctor: doctorObj } });
+                  }
+                }}
+              >
+                <FaVideo style={{ marginRight: '0.25rem' }} />
+                Join Now
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="no-appointments">
+            <p>No upcoming appointments. Book one now!</p>
+          </div>
+        )}
+      </div>
+
+      {/* Smart Health Insights Section */}
+      <div className="health-insights-section">
+        <h2 className="section-title">Today's Health Insights</h2>
+        <div className="insights-scroll">
+          <div className="insight-card">
+            <div className="insight-header">
+              <div className="insight-icon water">
+                <FaTint />
+              </div>
+              <span className="insight-label">Water</span>
+            </div>
+            <div className="insight-value">6/8</div>
+            <div className="insight-progress">
+              <div className="insight-progress-bar water" style={{ width: '75%' }}></div>
+            </div>
+            <div className="insight-subtitle">glasses today</div>
+          </div>
+          
+          <div className="insight-card">
+            <div className="insight-header">
+              <div className="insight-icon sleep">
+                <FaBed />
+              </div>
+              <span className="insight-label">Sleep</span>
+            </div>
+            <div className="insight-value">7.5h</div>
+            <div className="insight-progress">
+              <div className="insight-progress-bar sleep" style={{ width: '94%' }}></div>
+            </div>
+            <div className="insight-subtitle">last night</div>
+          </div>
+          
+          <div className="insight-card">
+            <div className="insight-header">
+              <div className="insight-icon steps">
+                <FaWalking />
+              </div>
+              <span className="insight-label">Steps</span>
+            </div>
+            <div className="insight-value">5,234</div>
+            <div className="insight-progress">
+              <div className="insight-progress-bar steps" style={{ width: '52%' }}></div>
+            </div>
+            <div className="insight-subtitle">of 10,000 goal</div>
+          </div>
+          
+          <div className="insight-card">
+            <div className="insight-header">
+              <div className="insight-icon medicine">
+                <FaPills />
+              </div>
+              <span className="insight-label">Medicines</span>
+            </div>
+            <div className="insight-value">
+              <FaCheckCircle style={{ color: '#10b981', fontSize: '2rem' }} />
+            </div>
+            <div className="insight-subtitle" style={{ marginTop: '1rem' }}>All taken today</div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6 py-8 pb-40">
-        {/* My Appointments button centered above the Find Your Doctor card */}
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => navigate('/my-appointments')}
-            aria-label={t('my_appointments')}
-            className="my-appointments-btn w-full sm:w-auto max-w-xs relative flex items-center justify-center px-8 py-3"
-            style={{ lineHeight: '1', minHeight: '48px' }}
-          >
-            <span className="text-sm font-semibold tracking-wide">{t('my_appointments')}</span>
-            {upcomingCount > 0 && (
-              <span
-                key={upcomingCount /* force reflow for animation on change */}
-                className={`notif-badge ${badgeAnimate ? 'pop' : ''}`}
-                aria-label={t('upcoming', 'Upcoming appointments count')}
-              >
-                {upcomingCount}
-              </span>
-            )}
-          </button>
-        </div>
-        {/* Search and Filters - Centered and Professional */}
-        <div className="max-w-4xl mx-auto card-elevated" style={{marginBottom: '0.1cm'}}>
-          <h2 className="text-2xl font-bold text-text-primary mb-6 text-center">{t('find_your_doctor')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Search */}
-            <div className="input-group">
-              <FaSearch className="input-icon" />
+        {/* Find Your Doctor Section - Modernized */}
+        <div className="doctor-search-section">
+          <h2 className="section-title">Find Your Doctor</h2>
+          <div className="search-container">
+            {/* Modern Search Bar */}
+            <div className="modern-search-bar">
+              <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder={`${t('search')} ${t('doctors').toLowerCase()}...`}
+                className="modern-search-input"
+                placeholder="Search doctors by name or specialty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input has-icon"
               />
             </div>
 
-            {/* Specialty Filter */}
-            <div className="input-group">
-              <FaFilter className="input-icon" />
-              <select
-                value={selectedSpecialty}
-                onChange={(e) => setSelectedSpecialty(e.target.value)}
-                className="input has-icon"
+            {/* Filter Chips */}
+            <div className="filter-chips">
+              <button 
+                className={`filter-chip ${availableOnly ? 'active' : ''}`}
+                onClick={() => setAvailableOnly(!availableOnly)}
               >
-                <option value="">{t('all_specialties')}</option>
-                {specialties.map(specialty => (
-                  <option key={specialty} value={specialty}>{specialty}</option>
-                ))}
-              </select>
+                Available Now
+              </button>
+              <button 
+                className={`filter-chip ${selectedSpecialty === 'Cardiology' ? 'active' : ''}`}
+                onClick={() => setSelectedSpecialty(selectedSpecialty === 'Cardiology' ? '' : 'Cardiology')}
+              >
+                Cardiology
+              </button>
+              <button 
+                className={`filter-chip ${selectedSpecialty === 'Pediatrics' ? 'active' : ''}`}
+                onClick={() => setSelectedSpecialty(selectedSpecialty === 'Pediatrics' ? '' : 'Pediatrics')}
+              >
+                Pediatrics
+              </button>
+              <button 
+                className={`filter-chip ${selectedSpecialty === 'General Medicine' ? 'active' : ''}`}
+                onClick={() => setSelectedSpecialty(selectedSpecialty === 'General Medicine' ? '' : 'General Medicine')}
+              >
+                General Medicine
+              </button>
             </div>
 
-            {/* Availability Filter */}
-            <div className="flex items-center justify-center gap-3 py-3">
-              <input
-                type="checkbox"
-                id="availableOnly"
-                checked={availableOnly}
-                onChange={(e) => setAvailableOnly(e.target.checked)}
-                className="w-5 h-5 rounded border-border-color text-primary-color focus:ring-2 focus:ring-primary-color"
-              />
-              <label htmlFor="availableOnly" className="text-base font-medium text-text-primary">
-                {t('available_only')}
-              </label>
+            {/* Specialty Quick Tags */}
+            <div className="specialty-tags">
+              <span className="specialty-tag" onClick={() => setSelectedSpecialty('Gynecology')}>👶 Gynecology</span>
+              <span className="specialty-tag" onClick={() => setSelectedSpecialty('Dermatology')}>🧴 Dermatology</span>
+              <span className="specialty-tag" onClick={() => setSelectedSpecialty('Orthopedics')}>🦴 Orthopedics</span>
+              <span className="specialty-tag" onClick={() => setSelectedSpecialty('Neurology')}>🧠 Neurology</span>
             </div>
           </div>
         </div>
@@ -402,118 +635,127 @@ const Home = () => {
           </div>
         )}
 
-        {/* Doctors Grid - Centered and Consistent */}
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{gap: '0.1cm'}}>
-            {filteredDoctors.map((doctor) => (
-              <div key={doctor.id} className="card hover:shadow-lg transition-all duration-300 overflow-hidden border border-border-light flex flex-col h-full">
-                {/* Doctor Header */}
-                <div className="p-6 pb-4 flex-grow">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary-color to-primary-dark rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                      {doctor.profile_image ? (
-                        <img 
-                          src={doctor.profile_image} 
-                          alt={doctor.name}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <FaUserMd />
-                      )}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="loading"></div>
+            <span className="ml-2">{t('loading_doctors')}</span>
+          </div>
+        ) : (
+          <>
+            {/* Doctors Grid - Centered and Consistent */}
+            <div className="max-w-7xl mx-auto" style={{ marginTop: '2rem' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{gap: '0.1cm'}}>
+                {filteredDoctors.map((doctor) => (
+                  <div key={doctor.id} className="card hover:shadow-lg transition-all duration-300 overflow-hidden border border-border-light flex flex-col h-full">
+                    {/* Doctor Header */}
+                    <div className="p-6 pb-4 flex-grow">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-20 h-20 bg-gradient-to-br from-primary-color to-primary-dark rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                          {doctor.profile_image ? (
+                            <img 
+                              src={doctor.profile_image} 
+                              alt={doctor.name}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <FaUserMd />
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-xl text-text-primary mb-1 truncate"><TransText text={doctor.name} /></h3>
+                          <p className="text-primary-color font-semibold text-lg"><TransText text={doctor.specialty} /></p>
+                          <p className="text-sm text-text-secondary mb-2"><TransText text={doctor.qualifications} /></p>
+                          
+                          {/* Availability Status */}
+                          <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                            doctor.is_available 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {doctor.is_available ? t('available') : t('unavailable')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Doctor Info */}
+                      <div className="doctor-details mb-6">
+                        <div className="detail-row">
+                          <FaClock className="detail-icon" />
+                          <div className="detail-text">{doctor.experience_years} {t('years_experience_other', { count: doctor.experience_years })}</div>
+                        </div>
+
+                        <div className="detail-row">
+                          <FaLanguage className="detail-icon" />
+                          <div className="detail-text"><TransText text={doctor.languages} /></div>
+                        </div>
+
+                        <div className="detail-row detail-center">
+                          <span className="text-lg font-bold text-success-color">{t('free_consultation')}</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-xl text-text-primary mb-1 truncate"><TransText text={doctor.name} /></h3>
-                      <p className="text-primary-color font-semibold text-lg"><TransText text={doctor.specialty} /></p>
-                      <p className="text-sm text-text-secondary mb-2"><TransText text={doctor.qualifications} /></p>
-                      
-                      {/* Availability Status */}
-                      <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        doctor.is_available 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {doctor.is_available ? t('available') : t('unavailable')}
+
+                    {/* Action Buttons */}
+                    <div className="px-6 pb-6 mt-auto">
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Video Call */}
+                        <button
+                          onClick={() => {
+                            if (!acceptedDoctorIds.has(doctor.id)) return; // guard
+                            navigate('/video-call', { state: { doctor } });
+                          }}
+                          disabled={!acceptedDoctorIds.has(doctor.id)}
+                          title={acceptedDoctorIds.has(doctor.id) ? t('start_video_call', 'Start Video Call') : t('waiting_for_doctor', 'Waiting for doctor acceptance')}
+                          className={`btn btn-success py-2 px-3 text-sm ${acceptedDoctorIds.has(doctor.id) ? '' : 'opacity-60 cursor-not-allowed'}`}
+                          aria-label={acceptedDoctorIds.has(doctor.id) ? `${t('video')} ${t('enabled','enabled')}` : `${t('video')} ${t('waiting','waiting')}`}
+                        >
+                          <FaVideo className="text-xs" />
+                          {t('video')}
+                        </button>
+
+                        {/* Audio Call */}
+                        <button
+                          onClick={() => {
+                            if (!acceptedDoctorIds.has(doctor.id)) return;
+                            navigate('/audio-call', { state: { doctor } });
+                          }}
+                          disabled={!acceptedDoctorIds.has(doctor.id)}
+                          title={acceptedDoctorIds.has(doctor.id) ? t('start_audio_call', 'Start Audio Call') : t('waiting_for_doctor', 'Waiting for doctor acceptance')}
+                          className={`btn btn-secondary py-2 px-3 text-sm ${acceptedDoctorIds.has(doctor.id) ? '' : 'opacity-60 cursor-not-allowed'}`}
+                          aria-label={acceptedDoctorIds.has(doctor.id) ? `${t('audio')} ${t('enabled','enabled')}` : `${t('audio')} ${t('waiting','waiting')}`}
+                        >
+                          <FaPhone className="text-xs" />
+                          {t('audio')}
+                        </button>
+
+                        {/* Book Appointment */}
+                        <button
+                          onClick={() => handleBookAppointment(doctor.id)}
+                          className="btn btn-outline py-2 px-3 text-sm"
+                          aria-label={`${t('book_appointment')} ${doctor.name}`}
+                        >
+                          <FaCalendar className="text-xs" />
+                          {t('book')}
+                        </button>
                       </div>
                     </div>
                   </div>
-
-                  {/* Doctor Info */}
-                  <div className="doctor-details mb-6">
-                    <div className="detail-row">
-                      <FaClock className="detail-icon" />
-                      <div className="detail-text">{doctor.experience_years} {t('years_experience_other', { count: doctor.experience_years })}</div>
-                    </div>
-
-                    <div className="detail-row">
-                      <FaLanguage className="detail-icon" />
-                      <div className="detail-text"><TransText text={doctor.languages} /></div>
-                    </div>
-
-                    <div className="detail-row detail-center">
-                      <span className="text-lg font-bold text-success-color">{t('free_consultation')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="px-6 pb-6 mt-auto">
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* Video Call */}
-                    <button
-                      onClick={() => {
-                        if (!acceptedDoctorIds.has(doctor.id)) return; // guard
-                        navigate('/video-call', { state: { doctor } });
-                      }}
-                      disabled={!acceptedDoctorIds.has(doctor.id)}
-                      title={acceptedDoctorIds.has(doctor.id) ? t('start_video_call', 'Start Video Call') : t('waiting_for_doctor', 'Waiting for doctor acceptance')}
-                      className={`btn btn-success py-2 px-3 text-sm ${acceptedDoctorIds.has(doctor.id) ? '' : 'opacity-60 cursor-not-allowed'}`}
-                      aria-label={acceptedDoctorIds.has(doctor.id) ? `${t('video')} ${t('enabled','enabled')}` : `${t('video')} ${t('waiting','waiting')}`}
-                    >
-                      <FaVideo className="text-xs" />
-                      {t('video')}
-                    </button>
-
-                    {/* Audio Call */}
-                    <button
-                      onClick={() => {
-                        if (!acceptedDoctorIds.has(doctor.id)) return;
-                        navigate('/audio-call', { state: { doctor } });
-                      }}
-                      disabled={!acceptedDoctorIds.has(doctor.id)}
-                      title={acceptedDoctorIds.has(doctor.id) ? t('start_audio_call', 'Start Audio Call') : t('waiting_for_doctor', 'Waiting for doctor acceptance')}
-                      className={`btn btn-secondary py-2 px-3 text-sm ${acceptedDoctorIds.has(doctor.id) ? '' : 'opacity-60 cursor-not-allowed'}`}
-                      aria-label={acceptedDoctorIds.has(doctor.id) ? `${t('audio')} ${t('enabled','enabled')}` : `${t('audio')} ${t('waiting','waiting')}`}
-                    >
-                      <FaPhone className="text-xs" />
-                      {t('audio')}
-                    </button>
-
-                    {/* Book Appointment */}
-                    <button
-                      onClick={() => handleBookAppointment(doctor.id)}
-                      className="btn btn-outline py-2 px-3 text-sm"
-                      aria-label={`${t('book_appointment')} ${doctor.name}`}
-                    >
-                      <FaCalendar className="text-xs" />
-                      {t('book')}
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* No Results */}
-        {filteredDoctors.length === 0 && !loading && (
-          <div className="text-center py-16">
-            <FaUserMd className="mx-auto text-8xl text-text-muted mb-6" />
-            <h3 className="text-2xl font-bold text-text-primary mb-4">{t('no_doctors_found')}</h3>
-            <p className="text-text-secondary text-lg">
-              {t('try_adjusting_filters')}
-            </p>
-          </div>
+            {/* No Results */}
+            {filteredDoctors.length === 0 && !loading && (
+              <div className="text-center py-16">
+                <FaUserMd className="mx-auto text-8xl text-text-muted mb-6" />
+                <h3 className="text-2xl font-bold text-text-primary mb-4">{t('no_doctors_found')}</h3>
+                <p className="text-text-secondary text-lg">
+                  {t('try_adjusting_filters')}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

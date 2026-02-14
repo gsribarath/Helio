@@ -19,13 +19,12 @@ export const usePushNotifications = () => {
         
         const initialized = await manager.init();
         if (initialized) {
-          console.log('Push notifications initialized successfully');
+          // Successfully initialized
           setPermissionStatus(manager.getPermissionStatus());
-        } else {
-          console.log('Push notifications not available or permission denied');
         }
+        // Silently handle initialization failure - push notifications are optional
       } catch (error) {
-        console.error('Failed to initialize push notifications:', error);
+        // Silently handle errors - push notifications are optional
       }
     };
 

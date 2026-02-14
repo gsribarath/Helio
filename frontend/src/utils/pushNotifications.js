@@ -10,32 +10,27 @@ class PushNotificationManager {
 
   async init() {
     if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-      console.warn('Push notifications not supported - no browser environment');
       return false;
     }
     
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.warn('Push notifications not supported');
       return false;
     }
 
     try {
       // Register service worker
       this.registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service worker registered');
-
-      // Request permission
-      const permission = await this.requestPermission();
-      if (permission !== 'granted') {
-        console.warn('Push notification permission denied');
-        return false;
+      
+      // Check if we already have permission
+      if (Notification.permission === 'granted') {
+        // Subscribe to push notifications
+        await this.subscribe();
       }
-
-      // Subscribe to push notifications
-      await this.subscribe();
+      // Don't request permission automatically - wait for user action
+      
       return true;
     } catch (error) {
-      console.error('Failed to initialize push notifications:', error);
+      // Silently handle errors - push notifications are optional
       return false;
     }
   }
@@ -56,10 +51,9 @@ class PushNotificationManager {
       });
       
       this.subscription = subscription;
-      console.log('Push subscription created');
       return subscription;
     } catch (error) {
-      console.error('Failed to subscribe to push notifications:', error);
+      // Silently handle subscription errors
       return null;
     }
   }
@@ -82,7 +76,6 @@ class PushNotificationManager {
   // Send push notification (simulated for demo - in production this would be server-side)
   async sendPushNotification(notificationData) {
     if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-      console.warn('Push notifications not available - no browser environment');
       return;
     }
 
@@ -93,7 +86,7 @@ class PushNotificationManager {
       if ('Notification' in window && Notification.permission === 'granted') {
         const notification = new Notification(notificationData.title, {
           body: notificationData.message,
-          icon: '/favicon.ico',
+          icon: '/favicon.svg',
           tag: notificationData.type,
           requireInteraction: notificationData.type === 'emergency_request' || notificationData.type === 'incoming_call',
           vibrate: notificationData.type === 'incoming_call' ? [200, 100, 200] : [100]
@@ -110,7 +103,7 @@ class PushNotificationManager {
         };
       }
     } catch (error) {
-      console.error('Failed to send push notification:', error);
+      // Silently handle notification errors
     }
   }
 
@@ -126,6 +119,33 @@ class PushNotificationManager {
       return 'unsupported';
     }
     return Notification.permission;
+  }
+
+  // Enable push notifications (call this when user explicitly wants to enable)
+  async enablePushNotifications() {
+    if (!this.isSupported()) {
+      return { success: false, error: 'Push notifications not supported' };
+    }
+
+    if (Notification.permission === 'granted') {
+      return { success: true, message: 'Already enabled' };
+    }
+
+    if (Notification.permission === 'denied') {
+      return { success: false, error: 'Permission denied. Please enable in browser settings.' };
+    }
+
+    try {
+      const permission = await this.requestPermission();
+      if (permission === 'granted') {
+        await this.subscribe();
+        return { success: true, message: 'Push notifications enabled' };
+      } else {
+        return { success: false, error: 'Permission denied' };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 }
 
