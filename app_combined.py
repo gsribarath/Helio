@@ -160,20 +160,47 @@ def register():
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     try:
-        data = request.get_json()
-        user = User.query.filter_by(email=data['email']).first()
+        data = request.get_json(silent=True) or {}
+        username = (data.get('username') or data.get('email') or '').strip()
+        password = data.get('password', '')
         
-        if user and check_password_hash(user.password_hash, data['password']):
+        if not username or not password:
+            return jsonify({'message': 'Username and password required'}), 400
+
+        demo_email_map = {
+            'p001': 'patient@demo.com',
+            'd001': 'doctor@demo.com',
+            'pm001': 'pharmacy@demo.com'
+        }
+
+        candidate_emails = [username]
+        if username in demo_email_map:
+            candidate_emails.append(demo_email_map[username])
+
+        user = None
+        for email in candidate_emails:
+            user = User.query.filter_by(email=email).first()
+            if user:
+                break
+
+        if user and check_password_hash(user.password_hash, password):
             access_token = create_access_token(identity=user.id)
             return jsonify({
                 'message': 'Login successful',
+                'token': access_token,
                 'access_token': access_token,
-                'user_type': user.user_type
+                'user': {
+                    'id': user.id,
+                    'username': username,
+                    'role': user.user_type,
+                    'email': user.email
+                }
             }), 200
         else:
             return jsonify({'message': 'Invalid credentials'}), 401
             
     except Exception as e:
+        print(f"Login error: {e}")
         return jsonify({'message': 'Login failed', 'error': str(e)}), 500
 
 # Doctor Routes
@@ -229,11 +256,38 @@ def get_medicines():
 def create_sample_data():
     """Create sample data for demonstration"""
     try:
-        if User.query.first():
-            return
-        
-        # Create demo users
+        # Create demo users if they do not already exist
         demo_users = [
+            {
+                'email': 'p001',
+                'password': 'patient123',
+                'user_type': 'patient',
+                'profile': {
+                    'name': 'Rajesh Kumar',
+                    'age': 35,
+                    'gender': 'male',
+                    'phone': '+91 98765 43210'
+                }
+            },
+            {
+                'email': 'd001',
+                'password': 'doctor123',
+                'user_type': 'doctor',
+                'profile': {
+                    'name': 'Dr. Priya Sharma',
+                    'specialty': 'Pediatrics',
+                    'qualifications': 'MBBS, MD Pediatrics',
+                    'experience_years': 10,
+                    'consultation_fee': 400.0,
+                    'languages': 'English, Hindi'
+                }
+            },
+            {
+                'email': 'pm001',
+                'password': 'pharmacy123',
+                'user_type': 'pharmacist',
+                'profile': None
+            },
             {
                 'email': 'patient@demo.com',
                 'password': 'password123',
@@ -261,6 +315,10 @@ def create_sample_data():
         ]
         
         for user_data in demo_users:
+            existing_user = User.query.filter_by(email=user_data['email']).first()
+            if existing_user:
+                continue
+
             user = User(
                 email=user_data['email'],
                 password_hash=generate_password_hash(user_data['password']),
@@ -269,10 +327,10 @@ def create_sample_data():
             db.session.add(user)
             db.session.flush()
             
-            if user_data['user_type'] == 'patient':
+            if user_data['user_type'] == 'patient' and user_data['profile']:
                 patient = Patient(user_id=user.id, **user_data['profile'])
                 db.session.add(patient)
-            else:
+            elif user_data['user_type'] == 'doctor' and user_data['profile']:
                 doctor = Doctor(user_id=user.id, **user_data['profile'])
                 db.session.add(doctor)
         
